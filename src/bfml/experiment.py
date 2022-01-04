@@ -63,7 +63,7 @@ def setup_experiment():
             sys.exit(0)
 
     if config.check_git_status:
-        repo = git.Repo(search_parent_directories=False)
+        repo = git.Repo(search_parent_directories=True)
         commit_id = repo.head.object.hexsha
         branch = repo.active_branch.name
         logging.info('Using code from git commit: {}'.format(commit_id))
