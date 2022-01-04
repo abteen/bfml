@@ -1,4 +1,4 @@
-import torch, logging, random, jsonlines, pandas
+import torch, logging, random, jsonlines, pandas, sys
 from tqdm import trange
 
 class PretrainingDatasetBase(torch.utils.data.Dataset):
@@ -54,10 +54,20 @@ class PretrainingDatasetWithLanguageEmb(PretrainingDatasetBase):
         super().__init__(training_data, config)
 
         self.tokenizer = tokenizer
-        self.language_ids = language_ids
+
+        if isinstance(language_ids, list):
+            assert len(language_ids) == len(self.examples)
+            self.language_ids = language_ids
+        elif isinstance(language_ids, dict):
+            logging.info('language ids given as dict -- setting all ids to {}'.format(config['target_language']))
+            self.language_ids = [language_ids[config['target_language']]] * len(self.examples)
+        else:
+            logging.error('Unknown input type {} for language_ids, expected list or dict'.format(type(language_ids)))
+            sys.exit(0)
+
         self.tokenization_settings = config['tokenizer_settings']
 
-        print(self.tokenization_settings)
+        logging.info('Given tokenization settings: {}'.format(self.tokenization_settings))
 
     def __getitem__(self, idx):
 
