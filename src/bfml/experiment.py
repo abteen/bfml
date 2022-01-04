@@ -31,8 +31,6 @@ def setup_experiment():
 
     config = OmegaConf.merge(dataset_cfg, exp_cfg, ta_cfg, tok_cfg, cli_cfg)
 
-    time = datetime.now().strftime("%m-%d-%H:%M")
-    logging.info('Start time: {}'.format(time))
 
     set_seeds(config['seed'])
 
@@ -93,6 +91,10 @@ def setup_experiment():
     else:
         os.environ['WANDB_DISABLED'] = 'True'
         config['training_arguments']['report_to'] = 'none'
+
+    time = datetime.now().strftime("%m-%d-%H:%M")
+    logging.info('Start time: {}'.format(time))
+
 
     logging.info('Number of GPUs available: {}'.format(torch.cuda.device_count()))
     logging.info('Using the following GPUs: {}'.format(config['visible_devices']))
