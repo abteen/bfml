@@ -1,6 +1,0 @@
-#Collator Settings
-collator_settings:
-  collator_type: default
-  init:
-    padding: longest
-    max_length: 256

@@ -1,8 +1,0 @@
-task: ner
-dataset_settings:
-  dataset_type: ner_dataset
-  data_directory: /projects/abeb4417/lrl/data/ner/rahimi_output/
-  train_language: same
-  eval_language: same
-  test_language: eng
-  max_len: 256
