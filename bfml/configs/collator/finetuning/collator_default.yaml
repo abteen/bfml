@@ -1,0 +1,4 @@
+collator_settings:
+  collator_type: token_classification
+  init:
+    padding: longest

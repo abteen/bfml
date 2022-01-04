@@ -1,0 +1,64 @@
+#Experiment Settings
+output_directory: /rc_scratch/abeb4417/distillation_models/
+log_directory: /projects/abeb4417/distillation/logs/
+use_wandb: False
+experiment_name: distillation_test
+visible_devices: "0,1"
+n_gpu: 2
+#test_langs: [be, eu, gl, hy, kk, ml, wo, xh]
+test_langs: [[be]]
+distillation: True
+
+#Tokenizer Settings
+tokenizer_settings:
+  teacher:
+    init:
+      pretrained_model_name_or_path: xlm-roberta-base
+    tokenization:
+      max_length: 5
+      truncation: True
+      return_token_type_ids: False
+      return_tensors: pt
+  student:
+    init:
+      pretrained_model_name_or_path: xlm-roberta-base
+    tokenization:
+      max_length: 10
+      truncation: True
+      return_token_type_ids: False
+      return_tensors: pt
+
+#Data settings:
+data_settings:
+  load_dataset_settings:
+    split: train
+  downsample: True
+  downsample_final_size: 250000
+  downsample_settings:
+    shuffle: True
+    seed: 42
+
+#Training Settings
+training_arguments:
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-5
+  max_steps: 50000
+  evaluation_strategy: 'no'
+  warmup_steps: 5
+  logging_steps: 500
+  save_steps: 10000
+
+#Model Settings
+model_settings:
+  teacher:
+    pretrained_model_name_or_path: xlm-roberta-base
+  student:
+    pretrained_model_name_or_path: xlm-roberta-base
+    num_hidden_layers: 6
+
+
+#Evaluation Settings
+use_test_set: False
+
+
