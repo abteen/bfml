@@ -3,12 +3,20 @@ from tqdm import trange
 
 class PretrainingDatasetBase(torch.utils.data.Dataset):
 
-    def __init__(self, training_data, **config):
+    def __init__(self, training_data, config):
 
-        self.data = training_data
+        if isinstance(training_data, list):
+            self.examples = training_data
+        elif isinstance(training_data, str):
+            logging.info('Training data was given as a string -- assuming this is a file and reading line by line.')
+            logging.info('Given string: {}'.format(training_data))
+            self.examples = []
+            with open(training_data, 'r') as f:
+                for line in f:
+                    self.examples.append(line.strip())
 
     def __len__(self):
-        return len(self.data)
+        return len(self.examples)
 
     def __getitem__(self, idx):
 
@@ -27,7 +35,7 @@ class PretrainingDataset(PretrainingDatasetBase):
 
     def __getitem__(self, idx):
 
-        instance = self.data[idx]
+        instance = self.examples[idx]
 
         enc = self.tokenizer(
             instance,
@@ -37,6 +45,39 @@ class PretrainingDataset(PretrainingDatasetBase):
         return {
             'input_ids': enc['input_ids'].squeeze(0),
             'attention_mask': enc['attention_mask'].squeeze(0)
+        }
+
+class PretrainingDatasetWithLanguageEmb(PretrainingDatasetBase):
+
+    def __init__(self, training_data, language_ids, tokenizer, config):
+
+        super().__init__(training_data, config)
+
+        self.tokenizer = tokenizer
+        self.language_ids = language_ids
+        self.tokenization_settings = config['tokenizer_settings']
+
+        print(self.tokenization_settings)
+
+    def __getitem__(self, idx):
+
+        instance = self.examples[idx]
+        language_id = self.language_ids[idx]
+
+        enc = self.tokenizer(
+            instance,
+            **self.tokenization_settings['tokenization']
+        )
+
+        input_ids = enc['input_ids'].squeeze(0)
+
+        #Taken from huggingface docs 12/7
+        language_ids = torch.tensor([language_id] * input_ids.shape[0])
+
+        return {
+            'input_ids': input_ids,
+            'attention_mask': enc['attention_mask'].squeeze(0),
+            'language_ids': language_ids
         }
 
 
