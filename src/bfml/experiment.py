@@ -2,6 +2,7 @@ import argparse, logging, git, os, sys
 import numpy, torch
 from transformers import set_seed, logging as trf_logging
 from omegaconf import OmegaConf
+from datetime import datetime
 
 
 def set_seeds(seed=42):
@@ -29,6 +30,9 @@ def setup_experiment():
     cli_cfg = OmegaConf.from_cli()
 
     config = OmegaConf.merge(dataset_cfg, exp_cfg, ta_cfg, tok_cfg, cli_cfg)
+
+    time = datetime.now().strftime("%m-%d-%H:%M")
+    logging.info('Start time: {}'.format(time))
 
     set_seeds(config['seed'])
 
