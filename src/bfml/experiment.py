@@ -18,15 +18,17 @@ def setup_experiment():
     parser.add_argument('--dataset_config', default='configs/empty.yaml')
     parser.add_argument('--experiment_config', default='configs/empty.yaml')
     parser.add_argument('--training_args', default='configs/empty.yaml')
+    parser.add_argument('--tokenizer_config', default='configs/empty.yaml')
 
     args, _ = parser.parse_known_args()
 
     dataset_cfg = OmegaConf.load(args.dataset_config)
     exp_cfg = OmegaConf.load(args.experiment_config)
     ta_cfg = OmegaConf.load(args.training_args)
+    tok_cfg = OmegaConf.load(args.tokenizer_config)
     cli_cfg = OmegaConf.from_cli()
 
-    config = OmegaConf.merge(dataset_cfg, exp_cfg, ta_cfg, cli_cfg)
+    config = OmegaConf.merge(dataset_cfg, exp_cfg, ta_cfg, tok_cfg, cli_cfg)
 
     set_seeds(config['seed'])
 
