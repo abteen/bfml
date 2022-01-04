@@ -85,8 +85,10 @@ def setup_experiment():
     if config['use_wandb']:
         import wandb
         wandb.init(project=config['experiment_name'])
+        config['training_arguments']['report_to'] = 'all'
     else:
         os.environ['WANDB_DISABLED'] = 'True'
+        config['training_arguments']['report_to'] = 'none'
 
     logging.info('Number of GPUs available: {}'.format(torch.cuda.device_count()))
     logging.info('Using the following GPUs: {}'.format(config['visible_devices']))
