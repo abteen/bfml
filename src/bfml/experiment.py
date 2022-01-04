@@ -65,7 +65,9 @@ def setup_experiment():
     if config.check_git_status:
         repo = git.Repo(search_parent_directories=False)
         commit_id = repo.head.object.hexsha
+        branch = repo.active_branch.name
         logging.info('Using code from git commit: {}'.format(commit_id))
+        logging.info('On active branch: {}'.format(branch))
 
     # Set visible devices
     os.environ['CUDA_VISIBLE_DEVICES'] = config['visible_devices']
