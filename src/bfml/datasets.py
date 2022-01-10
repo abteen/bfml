@@ -24,9 +24,9 @@ class PretrainingDatasetBase(torch.utils.data.Dataset):
 
 class PretrainingDataset(PretrainingDatasetBase):
 
-    def __init__(self, training_data, tokenizer, **config):
+    def __init__(self, training_data, tokenizer, config):
 
-        super().__init__(training_data, **config)
+        super().__init__(training_data, config)
 
         self.tokenizer = tokenizer
         self.tokenization_settings = config['tokenizer_settings']
@@ -303,18 +303,15 @@ class NERDataset(torch.utils.data.Dataset):
 
         return self.examples[id]
 
-class NERDatasetLangaugeEmbedding(torch.utils.data.Dataset):
-    def __init__(self, file, lang, max_len, tokenizer):
+class NERDatasetWithLangEmb(torch.utils.data.Dataset):
+    def __init__(self, file, lang, langid, max_len, tokenizer):
 
         self.tokenizer = tokenizer
 
         self.max_len = max_len
         self.lang = lang
 
-        # self.lang2id = {'sw': 0, 'ay': 1, 'en': 2, 'es': 3}
-        # self.langid = self.lang2id[lang]
-
-        self.langid = 2
+        self.langid = langid
 
         self.create_label2id()
 
