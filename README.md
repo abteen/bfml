@@ -1,1 +1,1 @@
-A base framework for machine learning experiments.
+A package containing datasets, overrides, and preprocessing tools. 
