@@ -1,10 +1,18 @@
 from transformers import Trainer
 from transformers.trainer_utils import speed_metrics
-import collections, time
+import collections, time, logging
+
+from torch.utils.data import DataLoader
 
 class MultiEvalTrainer(Trainer):
 
     def __init__(self, **args):
+        """
+
+            Subclassed Trainer to handle multiple evaluation datsets during training loop. Dataset should have a
+            pred_loop_key value to distinguish between them during evaluation, and this key should be set when defining
+            which metrics to use for early stopping.
+        """
         super().__init__(**args)
 
     def evaluate(
@@ -66,6 +74,12 @@ class MultiEvalTrainer(Trainer):
 class TrainerBase(Trainer):
 
     def __init__(self, model, sampler, **args):
+        """
+            Subclass of Trainer. Preserve default behavior, but use custom sampler if given.
+        :param model: Model to be trained
+        :param sampler: Sampler to be used. If none, gives default behavior
+        :param args: TrainingArguments
+        """
 
         super().__init__(model, **args)
 
@@ -75,6 +89,9 @@ class TrainerBase(Trainer):
     def get_train_dataloader(self):
 
         if self.multilingual_sampler:
+
+            self.multilingual_sampler.batch_size = self.args.train_batch_size
+            logging.info('Batch sampler given batch size of {}'.format(self.args.train_batch_size))
 
             return DataLoader(
                 self.train_dataset,
