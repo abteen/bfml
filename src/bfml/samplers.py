@@ -130,7 +130,7 @@ def get_language_probabilities(lengths, alpha=0.3):
 
 class WeightedMultiSourceSampler(Sampler):
 
-    def __init__(self, training_data, probabilities, seed, min_repeat_val=1):
+    def __init__(self, training_data, probabilities, seed, min_repeat_val=1, max_batches=None):
         """
             Batch Sampler used for mixing multiple sources of data according to probabilities. If a source is finished
             before other sources, it will be cycled until all sources have been finished at least once. Pregenerates
@@ -147,9 +147,10 @@ class WeightedMultiSourceSampler(Sampler):
         self.language_offsets = {}
         self.languages = []
         self.probabilities = []
-        self.examples = [v[0] for k,v in training_data.items()]
+        self.num_examples = {}
         self.seed = seed
         self.min_repeat_val = min_repeat_val
+        self.max_batches = max_batches
 
         #Batch size will be set by Trainer during training loop
         self.batch_size = None
@@ -168,9 +169,11 @@ class WeightedMultiSourceSampler(Sampler):
             #Keep track of language order corresponding to offsets
             self.languages.append(k)
             self.probabilities.append(probabilities[k])
+            self.num_examples[k] = len(v)
 
         logging.info('Language ordering: {}'.format(self.languages))
         logging.info('Language offsets: {}'.format(self.language_offsets))
+        logging.info('Examples per language: {}'.format(self.num_examples))
         logging.info('Total number of examples across all languages: {}'.format(running_total))
 
         self.lang2id = {lang:i for i,lang in enumerate(self.languages)}
@@ -198,7 +201,7 @@ class WeightedMultiSourceSampler(Sampler):
 
         for language_idx in iter_random_indices(self.seed):
 
-            if all(lang_repeat >= self.min_repeat_val for lang_repeat in self.repeats): #break out of loop once we have seen all examples from every language
+            if all(lang_repeat >= self.min_repeat_val for lang_repeat in self.repeats) or (self.max_batches and len(batches) >= self.max_batches): #break out of loop once we have seen all examples from every language
                 break
 
             batch = []
