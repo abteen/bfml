@@ -34,7 +34,7 @@ def setup_experiment():
 
     set_seeds(config['seed'])
 
-    intended_log_dir = os.path.join(config['log_directory'], config['experiment_name'])
+    intended_log_dir = os.path.join(config['log_directory'], config['group_name'])
 
     if not os.path.isdir(intended_log_dir):
         os.makedirs(intended_log_dir)
@@ -57,7 +57,7 @@ def setup_experiment():
     logging.info('Loaded config: \n{}'.format(OmegaConf.to_yaml(config)))
 
     #Check if model has been trained already -- if so, exit.
-    output_directory = os.path.join(config['output_directory'], config['experiment_name'], config['run_name'])
+    output_directory = os.path.join(config['output_directory'], config['group_name'], config['run_name'])
     if config.check_already_trained:
         final_model_directory = os.path.join(output_directory, 'final_model')
         if os.path.isdir(final_model_directory) and 'pytorch_model.bin' in os.listdir(final_model_directory):
@@ -86,7 +86,7 @@ def setup_experiment():
     # Setup wandb
     if config['use_wandb']:
         import wandb
-        wandb.init(project=config['experiment_name'])
+        wandb.init(project=config['experiment_name'], group=config['group_name'], name=config['run_name'])
         config['training_arguments']['report_to'] = 'all'
     else:
         os.environ['WANDB_DISABLED'] = 'True'
