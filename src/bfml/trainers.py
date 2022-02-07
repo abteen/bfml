@@ -1,6 +1,6 @@
 from transformers import Trainer
 from transformers.trainer_utils import speed_metrics
-import collections, time, logging
+import collections, time, logging, sys
 
 from torch.utils.data import DataLoader
 
@@ -101,6 +101,55 @@ class TrainerBase(Trainer):
                 num_workers=self.args.dataloader_num_workers,
                 pin_memory=self.args.dataloader_pin_memory,
             )
+
+        else:
+            return super().get_train_dataloader()
+
+
+class TrainerWithSampler(Trainer):
+
+    def __init__(self, model, sampler=None, batch_sampler=None, **args):
+        """
+            Subclass of Trainer. Preserve default behavior, but use custom sampler if given.
+        :param model: Model to be trained
+        :param sampler: Sampler to be used. If none, gives default behavior
+        :param args: TrainingArguments
+        """
+
+        super().__init__(model, **args)
+
+        self.custom_sampler = sampler
+        self.custom_batch_sampler = batch_sampler
+
+        if self.custom_sampler and self.custom_batch_sampler:
+            logging.error('Both sampler and batch sampler given -- exiting')
+            sys.exit(1)
+
+
+    def get_train_dataloader(self):
+
+        if self.custom_sampler:
+
+            return DataLoader(
+                self.train_dataset,
+                batch_size=self.args.train_batch_size,
+                sampler=self.custom_sampler,
+                collate_fn=self.data_collator,
+                drop_last=self.args.dataloader_drop_last,
+                num_workers=self.args.dataloader_num_workers,
+                pin_memory=self.args.dataloader_pin_memory,
+            )
+
+        elif self.custom_batch_sampler:
+            return DataLoader(
+                self.train_dataset,
+                batch_sampler=self.custom_batch_sampler,
+                collate_fn=self.data_collator,
+                drop_last=self.args.dataloader_drop_last,
+                num_workers=self.args.dataloader_num_workers,
+                pin_memory=self.args.dataloader_pin_memory,
+            )
+
 
         else:
             return super().get_train_dataloader()

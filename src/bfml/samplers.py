@@ -128,6 +128,27 @@ def get_language_probabilities(lengths, alpha=0.3):
 
     return language_probabilities
 
+def get_language_probabilities_list(lengths, alpha=0.3):
+
+    language_probabilities = []
+
+    total_examples = sum(lengths)
+
+    total_probability = 0.0
+    for length in lengths:
+        language_probability = length/total_examples
+        exponentiated_probability = language_probability ** alpha
+        total_probability += exponentiated_probability
+        language_probabilities.append(exponentiated_probability)
+
+    #Re-normalize probabilites
+    language_probabilities = [probability/total_probability for probability in language_probabilities]
+
+    logging.info('Created language probabilities.')
+    logging.info(pformat(language_probabilities))
+
+    return language_probabilities
+
 class WeightedMultiSourceSampler(Sampler):
 
     def __init__(self, training_data, probabilities, seed, min_repeat_val=1, max_batches=None):
@@ -136,7 +157,7 @@ class WeightedMultiSourceSampler(Sampler):
             before other sources, it will be cycled until all sources have been finished at least once. Pregenerates
             all batches before returning. Expects final dataset to be concatenated in the order of self.languages.
 
-        :param training_data: Dictionary of source_name: source_data pairs
+        :param training_data: Dictionary of source_name: source_cdata pairs
         :param probabilities: Dictionary of source_name: source_probability pairs, used for weighed sampling
         :param seed: Seed for deciding order of batches
         :param min_repeat_val: Minimum number of times to repeat each source before breaking
