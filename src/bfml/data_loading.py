@@ -1,4 +1,5 @@
-import torch, numpy as np
+import torch, numpy as np, os
+from datasets import load_dataset, concatenate_datasets
 
 
 def read_lines(file, preserve_lines=True):
@@ -212,3 +213,37 @@ def chunk_and_tokenize_documents_python(documents, tokenizer, max_length):
         'attention_mask': attention_masks
     }
 
+def load_data_from_dir(input_dir, tokenizer, max_length=256):
+    """
+    Load data directly from text files, tokenize, and chunk.
+    :param input_directory:
+    :param tokenizer:
+    :return:
+    """
+
+    num_processes = int(os.environ['SLURM_NTASKS'])
+
+    print('{} processes Available'.format(num_processes))
+
+    if os.path.isdir(input_dir):
+        data_files = sorted([os.path.join(input_dir, x) for x in os.listdir(input_dir)])
+    else:
+        data_files = [input_dir]
+
+    created_datasets = []
+    for i, data_file in enumerate(data_files):
+        data = load_dataset('text', data_files=data_file)
+        data = data.filter(lambda ex: len(ex['text']) >= 50)
+
+        data = data.map(
+            lambda examples: chunk_and_tokenize_documents_python(examples['text'], tokenizer, max_length), batched=True,
+            remove_columns=['text'],
+            num_proc=num_processes)
+
+        created_datasets.append(data)
+        print('.................Finished with dataset {} of {}'.format(i, len(data_files)))
+
+    created_datasets = [x['train'] for x in created_datasets]
+    print('concating:')
+    final_dataset = concatenate_datasets(created_datasets)
+    return final_dataset
