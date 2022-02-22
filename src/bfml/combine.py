@@ -128,7 +128,7 @@ def _interleave_map_style_datasets_continuous(
         file_name
     ))
 
-    return concatenated_datasets.select(indices, keep_in_memory=True, new_fingerprint=file_name, **kwargs)
+    return concatenated_datasets.select(indices, new_fingerprint=file_name, **kwargs)
 
 
 class SimpleIterableDataset(_BaseExamplesIterable):

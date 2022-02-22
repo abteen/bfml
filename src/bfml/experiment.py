@@ -72,35 +72,37 @@ def setup_experiment():
         logging.info('On active branch: {}'.format(branch))
 
     # Set visible devices
-    os.environ['CUDA_VISIBLE_DEVICES'] = config['visible_devices']
-    import torch
-    try:
-        assert torch.cuda.device_count() == config['n_gpu']
-    except AssertionError as err:
-        logging.error('Expected {} GPUs availble, but only see {} (visible devices: {})'.format(config['n_gpu'],
-                                                                                                torch.cuda.device_count(),
-                                                                                                config[
-                                                                                                    'visible_devices']))
-        sys.exit(1)
 
-    # Setup wandb
-    if config['use_wandb']:
-        import wandb
-        wandb.init(project=config['experiment_name'], group=config['group_name'], name=config['run_name'])
-        config['training_arguments']['report_to'] = 'all'
-    else:
-        os.environ['WANDB_DISABLED'] = 'True'
-        config['training_arguments']['report_to'] = 'none'
+    if not config.get('dev', None):
+        os.environ['CUDA_VISIBLE_DEVICES'] = config['visible_devices']
+        import torch
+        try:
+            assert torch.cuda.device_count() == config['n_gpu']
+        except AssertionError as err:
+            logging.error('Expected {} GPUs availble, but only see {} (visible devices: {})'.format(config['n_gpu'],
+                                                                                                    torch.cuda.device_count(),
+                                                                                                    config[
+                                                                                                        'visible_devices']))
+            sys.exit(1)
 
-    time = datetime.now().strftime("%m-%d-%H:%M")
-    logging.info('Start time: {}'.format(time))
+        # Setup wandb
+        if config['use_wandb']:
+            import wandb
+            wandb.init(project=config['experiment_name'], group=config['group_name'], name=config['run_name'])
+            config['training_arguments']['report_to'] = 'all'
+        else:
+            os.environ['WANDB_DISABLED'] = 'True'
+            config['training_arguments']['report_to'] = 'none'
+
+        time = datetime.now().strftime("%m-%d-%H:%M")
+        logging.info('Start time: {}'.format(time))
 
 
-    logging.info('Number of GPUs available: {}'.format(torch.cuda.device_count()))
-    logging.info('Using the following GPUs: {}'.format(config['visible_devices']))
+        logging.info('Number of GPUs available: {}'.format(torch.cuda.device_count()))
+        logging.info('Using the following GPUs: {}'.format(config['visible_devices']))
 
-    assert config['expected_batch_size'] == config['n_gpu'] * \
-           config['training_arguments']['per_device_train_batch_size'] * \
-           config['training_arguments']['gradient_accumulation_steps']
+        assert config['expected_batch_size'] == config['n_gpu'] * \
+               config['training_arguments']['per_device_train_batch_size'] * \
+               config['training_arguments']['gradient_accumulation_steps']
 
     return args, config, output_directory
