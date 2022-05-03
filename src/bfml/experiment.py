@@ -34,7 +34,7 @@ def setup_experiment():
 
     set_seeds(config['seed'])
 
-    intended_log_dir = os.path.join(config['log_directory'], config['group_name'])
+    intended_log_dir = os.path.join(config['log_directory'], config['experiment_name'], config['group_name'])
 
     if not os.path.isdir(intended_log_dir):
         os.makedirs(intended_log_dir)
@@ -57,7 +57,7 @@ def setup_experiment():
     logging.info('Loaded config: \n{}'.format(OmegaConf.to_yaml(config)))
 
     #Check if model has been trained already -- if so, exit.
-    output_directory = os.path.join(config['output_directory'], config['group_name'], config['run_name'])
+    output_directory = os.path.join(config['output_directory'], config['experiment_name'], config['group_name'], config['run_name'])
     if config.check_already_trained:
         final_model_directory = os.path.join(output_directory, 'final_model')
         if os.path.isdir(final_model_directory) and 'pytorch_model.bin' in os.listdir(final_model_directory):
@@ -79,7 +79,7 @@ def setup_experiment():
         try:
             assert torch.cuda.device_count() == config['n_gpu']
         except AssertionError as err:
-            logging.error('Expected {} GPUs availble, but only see {} (visible devices: {})'.format(config['n_gpu'],
+            logging.error('Expected {} GPUs available, but only see {} (visible devices: {})'.format(config['n_gpu'],
                                                                                                     torch.cuda.device_count(),
                                                                                                     config[
                                                                                                         'visible_devices']))
